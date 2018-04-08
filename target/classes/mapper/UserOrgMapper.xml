@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="uosm.dao.UserOrgDao" >
+
+    <sql id="user_org">
+        id,user_id,org_id
+    </sql>
+
+    <resultMap type="User" id="resultUserMap_2">
+        <result property="id" column="id"/>
+        <result property="login_name" column="login_name"/>
+        <result property="pwd" column="pwd"/>
+        <result property="name" column="name"/>
+        <result property="nick" column="nick"/>
+        <result property="sex" column="sex"/>
+        <result property="email" column="email"/>
+        <result property="tel" column="tel"/>
+        <result property="phone" column="phone"/>
+        <!--<collection property="orgs" column="id" fetchType="eager"-->
+                    <!--select="uosm.dao.UserOrgDao.selectOrgsByUserId"/>-->
+    </resultMap>
+
+    <resultMap type="Org" id="resultOrgMap_2">
+        <result property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="suporg" column="suporg"/>
+        <result property="path" column="path"/>
+        <!--<collection property="users" column="id" fetchType="eager"-->
+                    <!--select="uosm.dao.UserOrgDao.selectUsersByOrgId"/>-->
+    </resultMap>
+
+
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO user_org(user_id,org_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.user_id},#{item.org_id})
+        </foreach>
+    </insert>
+
+    <select id="selectTheUserOrg" resultType="UserOrg" parameterType="UserOrg">
+        SELECT <include refid="user_org"/> FROM user_org
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id!=null">AND id=#{id}</if>
+            <if test="user_id!=null">AND user_id=#{user_id}</if>
+            <if test="org_id!=null">AND org_id=#{org_id}</if>
+        </trim>
+    </select>
+
+    <!-- 根据成员ID,查看这个成员所加入的所有组织-->
+    <select id="selectOrgsByUserId" resultMap="resultOrgMap_2" parameterType="java.lang.Integer">
+        SELECT o.*
+        FROM org o, user_org  uo
+        WHERE o.id = uo.org_id AND uo.user_id=#{user_id}
+    </select>
+
+    <select id="selectUsersByOrgId" resultMap="resultUserMap_2" parameterType="java.lang.Integer">
+        SELECT u.*
+        FROM user u, user_org uo
+        WHERE u.id=uo.user_id AND uo.org_id=#{org_id}
+    </select>
+
+    <update id="updateWithId" parameterType="UserOrg">
+        UPDATE user_org
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="user_id!=null">user_id=#{user_id},</if>
+            <if test="org_id!=null">org_id=#{org_id},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="UserOrg">
+        DELETE FROM user_org WHERE
+        <foreach collection="list" item="item" index="index" separator="or">
+            (user_id=#{item.user_id} AND org_id=#{item.org_id})
+        </foreach>
+    </delete>
+
+    <delete id="deleteAllOrgsByUserId" parameterType="java.lang.Integer">
+        DELETE FROM user_org
+        WHERE user_id=#{user_id}
+    </delete>
+
+    <delete id="deleteAllUsersByOrgId" parameterType="java.lang.Integer">
+        DELETE FROM user_org
+        WHERE org_id=#{org_id}
+    </delete>
+
+
+</mapper>

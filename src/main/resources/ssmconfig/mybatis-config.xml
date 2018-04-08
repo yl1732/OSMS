@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+        <typeAlias type="uosm.model.Admin" alias="Admin"/>
+        <typeAlias type="uosm.model.User" alias="User"/>
+        <typeAlias type="uosm.model.Org" alias="Org"/>
+        <typeAlias type="uosm.model.UserOrg" alias="UserOrg"/>
+    </typeAliases>
+</configuration>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="uosm.dao.OrgDao" >
+
+    <sql id="org_column">
+        id,name,suporg,path
+    </sql>
+
+    <resultMap type="Org" id="resultOrgMap_1">
+        <result property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="suporg" column="suporg"/>
+        <result property="path" column="path"/>
+        <collection property="users" column="id" fetchType="eager"
+                    select="uosm.dao.UserOrgDao.selectUsersByOrgId"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="Org">
+        INSERT INTO org(id,name,suporg,path)
+        VALUES(#{id},#{name},#{suporg},#{path})
+    </insert>
+
+    <select id="selectById" resultMap="resultOrgMap_1" parameterType="java.lang.Integer">
+        SELECT <include refid="org_column"/>
+        FROM org
+        WHERE id=#{id}
+    </select>
+
+    <select id="selectTheOrg" resultMap="resultOrgMap_1" parameterType="Org">
+        SELECT <include refid="org_column"/> FROM org
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id!=null">AND id=#{id}</if>
+            <if test="name!=null">AND name=#{name}</if>
+            <if test="suporg!=null">AND suporg=#{suporg}</if>
+            <if test="path!=null">AND path=#{path}</if>
+        </trim>
+    </select>
+
+    <select id="select" resultMap="resultOrgMap_1" parameterType="Org">
+        SELECT <include refid="org_column"/>
+        FROM org
+        <where>
+            <choose>
+                <when test="id!=null">
+                    and id=#{id}
+                </when>
+                <when test="name!=null">
+                    and name like concat('%',#{name},'%')
+                </when>
+                <when test="suporg!=null">
+                    and suporg=#{suporg}
+                </when>
+                <when test="path!=null">
+                    and path=#{path}
+                </when>
+                <otherwise>
+                    and name is not null
+                </otherwise>
+            </choose>
+        </where>
+
+    </select>
+
+    <select id="selectLowerOrgsById" parameterType="java.lang.Integer" resultType="Org">
+        SELECT <include refid="org_column"/>
+        FROM org
+        WHERE suporg=#{id}
+    </select>
+
+    <select id="selectAllLowerOrgs" resultMap="resultOrgMap_1" parameterType="Org">
+        SELECT <include refid="org_column"/>
+        FROM org
+        WHERE path LIKE concat(#{path},#{id},'-','%')
+    </select>
+
+    <update id="updateWithId" parameterType="Org">
+        UPDATE org
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="suporg!=null">suporg=#{suporg},</if>
+            <if test="path!=null">path=#{path},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM org WHERE id=#{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="uosm.dao.AdminDao" >
+
+    <sql id="admin_column">
+        id,name,email
+    </sql>
+
+    <resultMap id="resultAdminMap" type="Admin">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="Admin">
+        INSERT INTO admin(id,name,pwd,email)
+        VALUES(#{admin.id},#{admin.name},#{admin.pwd},#{admin.email})
+    </insert>
+
+    <select id="selectById" resultType="Admin" parameterType="Integer">
+        SELECT <include refid="admin_column"/>
+        FROM admin
+        WHERE id=#{id}
+    </select>
+
+    <select id="selectByName" resultType="Admin" parameterType="String">
+        SELECT <include refid="admin_column"/>
+        FROM admin
+        WHERE name=#{name}
+    </select>
+
+    <select id="selectByNailAndPwd" resultType="Admin" parameterType="Admin">
+        SELECT  <include refid="admin_column"/> FROM admin
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id!=null">AND id=#{id}</if>
+            <if test="name!=null">AND name=#{name}</if>
+            <if test="email!=null">AND email=#{email}</if>
+            AND pwd=#{pwd}
+        </trim>
+    </select>
+
+    <select id="selectTheAdmin" resultType="Admin" parameterType="Admin">
+        SELECT <include refid="admin_column"/> FROM admin
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id!=null">AND id=#{id}</if>
+            <if test="name!=null">AND name=#{name}</if>
+            <if test="email!=null">AND email=#{email}</if>
+        </trim>
+    </select>
+
+    <select id="select" resultMap="resultAdminMap" parameterType="Admin">
+        SELECT <include refid="admin_column"/>
+        FROM admin
+        <where>
+            <choose>
+                <when test="id!=null">
+                    and id=#{id}
+                </when>
+                <when test="name!=null">
+                    and name LIKE concat('%',#{name},'%')
+                </when>
+                <when test="email!=null">
+                    and email=#{email}
+                </when>
+                <otherwise>
+                    and name is not null
+                </otherwise>
+            </choose>
+        </where>
+
+    </select>
+
+    <update id="updateWithId" parameterType="Admin">
+        UPDATE admin
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="pwd!=null">pwd=#{pwd},</if>
+            <if test="email!=null">email=#{email},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="Integer">
+        DELETE FROM admin WHERE id=#{id}
+    </delete>
+
+    <delete id="deleteByName" parameterType="String">
+        DELETE FROM admin WHERE name=#{name}
+    </delete>
+
+</mapper>

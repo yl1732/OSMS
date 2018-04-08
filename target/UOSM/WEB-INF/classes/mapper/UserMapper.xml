@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="uosm.dao.UserDao" >
+
+
+    <sql id="user_column">
+        id,login_name,name,nick,sex,email,tel,phone
+    </sql>
+
+    <resultMap id="resultUserMap_1" type="User">
+        <result property="id" column="id"/>
+        <result property="login_name" column="login_name"/>
+
+        <result property="name" column="name"/>
+        <result property="nick" column="nick"/>
+        <result property="sex" column="sex"/>
+        <result property="email" column="email"/>
+        <result property="tel" column="tel"/>
+        <result property="phone" column="phone"/>
+        <collection property="orgs" column="id" fetchType="eager"
+                    select="uosm.dao.UserOrgDao.selectOrgsByUserId"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="User">
+        INSERT INTO user(id,login_name,pwd,name,nick,sex,email,tel,phone)
+        VALUES (#{id},#{login_name},#{pwd},#{name},#{nick},#{sex},#{email},#{tel},#{phone})
+    </insert>
+
+    <select id="selectById" resultMap="resultUserMap_1" parameterType="Integer">
+        SELECT <include refid="user_column"/>
+        FROM user
+        WHERE id=#{id}
+    </select>
+
+    <select id="selectByLoginName" resultMap="resultUserMap_1" parameterType="String">
+        SELECT <include refid="user_column"/>
+        FROM user
+        WHERE login_name=#{login_name}
+    </select>
+
+    <select id="selectByLoginNameAndPwd" resultMap="resultUserMap_1" >
+        SELECT <include refid="user_column"/>
+        FROM user
+        WHERE login_name=#{login_name}
+        AND pwd=#{pwd}
+    </select>
+
+    <select id="selectTheUser" resultMap="resultUserMap_1" parameterType="User">
+        SELECT <include refid="user_column"/> FROM user
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id!=null">AND id=#{id}</if>
+            <if test="login_name!=null">AND login_name=#{login_name}</if>
+            <if test="pwd!=null">AND pwd=#{pwd}</if>
+            <if test="name!=null">AND name=#{name}</if>
+            <if test="nick!=null">AND name=#{nick}</if>
+            <if test="sex!=null">AND sex=#{sex}</if>
+            <if test="email!=null">AND email=#{email}</if>
+            <if test="tel!=null">AND tel=#{tel}</if>
+            <if test="phone!=null">AND phone=#{phone}</if>
+        </trim>
+    </select>
+
+    <select id="select" resultMap="resultUserMap_1" parameterType="User">
+        SELECT <include refid="user_column"/>
+        FROM user
+        <where>
+            <choose>
+                <when test="id!=null">
+                    and id=#{id}
+                </when>
+                <when test="login_name!=null">
+                    and login_name=#{login_name}
+                </when>
+                <when test="name!=null">
+                    and name LIKE concat('%',#{name},'%')
+                </when>
+                <when test="nick!=null">
+                    and nick LIKE concat('%',#{nick},'%')
+                </when>
+                <when test="email!=null">
+                    and email=#{email}
+                </when>
+                <when test="tel!=null">
+                    and tel=#{tel}
+                </when>
+                <when test="phone!=null">
+                    and phone=#{phone}
+                </when>
+                <otherwise>
+                    and name is not null
+                </otherwise>
+            </choose>
+        </where>
+
+    </select>
+
+    <update id="updateWithId">
+        UPDATE user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="login_name!=null">login_name=#{login_name},</if>
+            <if test="pwd!=null">pwd=#{pwd},</if>
+            <if test="name!=null">name=#{name},</if>
+            <if test="nick!=null">nick=#{nick},</if>
+            <if test="sex!=null">sex=#{sex},</if>
+            <if test="email!=null">email=#{email},</if>
+            <if test="tel!=null">tel=#{tel},</if>
+            <if test="phone!=null">phone=#{phone},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="Integer">
+        DELETE FROM user
+        WHERE id=#{id}
+    </delete>
+
+    <delete id="deleteByLoginName" parameterType="String">
+        DELETE FROM user
+        WHERE login_name=#{login_name}
+    </delete>
+
+</mapper>
